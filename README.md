@@ -1,6 +1,10 @@
 # Stem Player Emulator
 
+Below is the readme for the final official release of the Stem Player Emulator. This repo contains all releases of this program, faulty or functioning, for the intent of archiving software. We do not encourage piracy at all. We offer this software to be tinkered with or used by those who own the stem player. Those that use this software without owning the physical product are not our responsibility. The software in this repo falls under a grey area. Greets to the mediafire and soulseek gangs lmao.
+
 This repository contains the source code of Kanye West's stem player.
+
+**THE TUTORIAL BELOW HAS INSTRUCTIONS FOR THE 0.7 BY KRYSTALGAMER. SOON THIS RELEASE WILL BECOME DEPRECATED, AND THEY MAY PATCH THE SITE. I ENCOURAGE ANYONE WHO'S GOT THE SKILLS TO CODE A NEW RELEASE TO DO JUST THAT.**
 
 ## Tutorial
 
