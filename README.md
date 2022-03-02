@@ -1,6 +1,6 @@
 # Stem Player Emulator
 
-This repository contains the source code of Kanye West's stem player.
+This repository contains the source code of Kanye West's stem player. The original creator, krystalgamer, pulled down the extension. I will update this as time goes on. For now look at the current available forks of the original repo.
 
 ## Tutorial
 
@@ -37,3 +37,5 @@ If you prefer a video tutorial you can see mine [here](https://www.youtube.com/w
 ## License
 
 This project is MIT Licensed
+
+Bless up
