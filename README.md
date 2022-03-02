@@ -14,7 +14,7 @@ If you prefer a video tutorial you can see mine [here](https://www.youtube.com/w
 
 ## Mobile Installation (iOS)
 1. Install [Userscripts](https://apps.apple.com/us/app/userscripts/id1463298887)
-2. Go [here](https://github.com/krystalgamer/stem-player-emulator/raw/master/stem_emulator.user.js)
+2. Go [here](https://github.com/603dotnz/stem-player-emulator/raw/master/stem_emulator.user.js)
 3. Next to the website name on Safari, click the "aA" button.
 4. Click "Manage Extensions" and enable Userscripts
 5. Go back to the "aA" menu, and click "Userscripts"
