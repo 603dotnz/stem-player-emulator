@@ -4,7 +4,7 @@ This repository contains the source code of Kanye West's stem player.
 
 ## Tutorial
 
-If you prefer a video tutorial you can see mine [here]( )
+If you prefer a video tutorial you can krystalgamer's [here](https://youtu.be/QzjBLssrB9I)
 
 ## Installation (Chrome, Firefox, Safari, Edge, Opera)
 
