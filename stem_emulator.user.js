@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Stem Player Emulator
 // @namespace    https://www.stemplayer.com/
-// @version      0.8.4
+// @version      0.9.1
 // @description  Emulator for Kanye West's stem player
 // @author       krystalgamer
 // @match        https://www.stemplayer.com/*
@@ -48,6 +48,7 @@
         static RENAME_ALBUM = 15;
         static MOVE_TRACK = 16;
         static GET_STATE_OF_CHARGE = 17;
+        static CHALLENGE = 18;
     };
 
 
@@ -85,6 +86,19 @@
     so we split off the beginning:
     */
         return base64url;
+    }
+
+    function downloadContent(content, name){
+        base64_arraybuffer(content).then( (data) => {
+            const element = document.createElement('a');
+            element.setAttribute('href', data);
+            element.setAttribute('download', name);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element)
+        });
+
     }
 
     class FileDownloaderState{
@@ -176,15 +190,7 @@ console.log('out maquina');
                 return;
             }
 
-            base64_arraybuffer(this.content).then( (data) => {
-                                    const element = document.createElement('a');
-                                    element.setAttribute('href', data);
-                                    element.setAttribute('download', this.getCoolName());
-                                    element.style.display = 'none';
-                                    document.body.appendChild(element);
-                                    element.click();
-                                    document.body.removeChild(element)
-                                });
+            downloadContent(this.content, this.getCoolName());
         }
 
         isFull(){
@@ -256,6 +262,15 @@ console.log('out maquina');
     };
 
 
+    function getDeviceInfo(){
+        return {
+                        'appver': "1.0.1747",
+                        'btver': "1.24.1405",
+                        'blver': "0.1.1311",
+                        'sn': '002800273330510139323636'
+                    };
+    }
+
     class StemEmulator{
         constructor(){
             this.last = null;
@@ -317,12 +332,7 @@ console.log('out maquina');
         }
 
         getDeviceInfo(){
-         return {
-                        'appver': "1.0.1636",
-                        'btver': "1.24.1405",
-                        'blver': "0.1.1311",
-                        'sn': '002800273330510139323636'
-                    };
+            return getDeviceInfo();
         }
 
         getStorageInfo(){
@@ -353,6 +363,8 @@ console.log('out maquina');
                 case ControlType.GET_ALBUM_CONFIG:
                     const p = JSON.parse(new TextDecoder().decode(this.last.payload.slice(1,-1)));
                     return createResponse(MessageType.RESPONSE, new Uint8Array([this.last.payload[0], ...jsonToUint8(this.albums[p.album].config)]));
+                case ControlType.CHALLENGE:
+                    return createResponse(MessageType.RESPONSE, new Uint8Array([this.last.payload[0], ...jsonToUint8({response:69})]));
                 default:
                     console.warn('unsupported control type ' + this.last.payload[0]);
                     break;
@@ -575,15 +587,30 @@ console.log('out maquina');
 
     function newFetch(){
 
-
+/*
         for(let i = 0; i< arguments.length; i++){
             console.dir(arguments[i]);
             console.log(typeof(arguments[i]));
         }
+        */
+
 
         let url = arguments[0];
         if(typeof(arguments[0]) == 'string' && mode == 'wav'){
            url = arguments[0].replace('codec=mp3', 'codec=wav');
+        }
+
+
+        if(typeof(url) == 'string' && url.endsWith('/accounts/device-login')){
+            return new Promise( (res, _) => { res({ok: true, json: async () => {
+                return  {data: {AccessToken: 'hi'}};
+
+            } }); } );
+        }
+
+        if(typeof(url) == 'string' && url.startsWith('https://api.stemplayer.com/content/stems?')){
+            url = url+'&device_id='+getDeviceInfo().sn;
+
         }
 
 
@@ -599,15 +626,41 @@ console.log('out maquina');
     function modeStr(){
         return 'Current mode: ' + mode;
     }
-    const but = document.createElement('button');
-    but.style.zIndex = 9999;
-    but.innerHTML = modeStr();
-    but.addEventListener('click', (e) => {
 
+    function createTopMostButton(innerHTML, eventListener){
+        const but = document.createElement('button');
+        but.style.zIndex = 9999;
+        but.innerHTML = innerHTML;
+        but.addEventListener('click', eventListener);
+        return but;
+    }
+
+
+    const buttons = [];
+    const modeButton = createTopMostButton(modeStr(), (e) => {
         mode = mode == 'mp3' ? 'wav' : 'mp3';
         e.srcElement.innerHTML = modeStr();
     });
-    
+
+
+    let downloadOnPlay = false;
+    function downloadOnPlayStr(){
+        return 'Download on play: ' + (downloadOnPlay ? 'on' : 'off');
+    }
+
+    const downloadButton = createTopMostButton(downloadOnPlayStr(), (e) => {
+        downloadOnPlay = !downloadOnPlay;
+        e.srcElement.innerHTML = downloadOnPlayStr();
+    });
+
+    buttons.push(downloadButton);
+    buttons.push(modeButton);
+
+
+    function addButtons(){
+        for(let i = 0; i <buttons.length; i++)
+            document.body.prepend(buttons[i]);
+    }
 
 
     if(!!window.InstallTrigger){
@@ -637,14 +690,52 @@ console.log('out maquina');
         window.chrome = {loadTimes:{}};
     }
 
+
+    let downloadFullTrack = null;
+    class MyAudio extends Audio{
+        constructor(url){
+            super(url);
+        }
+
+        play(){
+            downloadFullTrack = downloadOnPlay ? this.src : null;
+            return super.play();
+
+        }
+    }
+    Audio = MyAudio;
+
+    let metadata = {};
+    Object.defineProperty(navigator.mediaSession, 'metadata', {
+        get: function() {
+            return metadata;
+        },
+        set: function(value) {
+
+            const trackName = [value.album, value.title].join('_')+'.'+mode;
+
+            if(downloadFullTrack != null){
+
+                fetch(downloadFullTrack).then( (response) => response.arrayBuffer()).then( (buffer) => {
+                    downloadContent(buffer, trackName);
+                });
+
+                downloadFullTrack = null;
+            }
+            metadata = value;
+        }
+    });
+
     if (document.readyState == "complete" || document.readyState == "loaded" || document.readyState == "interactive") {
-        document.body.prepend(but)
+        addButtons();
     } else {
         document.addEventListener("DOMContentLoaded", function(event) {
-            document.body.prepend(but)
+            addButtons();
         });
     }
 
-    window.localStorage.setItem('production_sp_basic_session', JSON.stringify({"AuthToken":btoa(atob('bHJwYW5kYThAZ21haWwuY29t')+':'+Date.now())}))
+    window.localStorage.setItem('production_sp_basic_session', JSON.stringify({"AuthToken":btoa(atob('bGVubmFyZGxlbW1lckBnbWFpbC5jb20=')+':'+Date.now())}))
+
+
 
 })();
