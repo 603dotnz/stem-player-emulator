@@ -2,6 +2,14 @@
 
 This repository contains the source code of Kanye West's stem player.
 
+
+## Please Read
+
+Kano has been updating their website so the emulator might stop working at any time without warning. If you just want to listen to the album then I suggest you to find mirrors online, if you wish to support the emulator then you can donate [here](https://www.paypal.com/donate/?hosted_button_id=N6QZL2267QYLU). 
+
+Money will be used to buy the stemplayer and teardown for further reverse-engineering purposes.
+
+
 ## Tutorial
 
 If you prefer a video tutorial you can view krystalgamer's [here](https://youtu.be/QzjBLssrB9I)
